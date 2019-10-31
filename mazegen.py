@@ -1,5 +1,4 @@
 import random
-import time
 import tkinter
 
 
@@ -25,39 +24,46 @@ class Maze:
                     result[rowidx*2][1+colidx*2] = ' '
                 if 'e' in cell.doors:
                     result[1+rowidx*2][2+colidx*2] = ' '
-                if 's' in cell.doors:
-                    result[2+rowidx*2][1+colidx*2] = ' '
-                if 'w' in cell.doors:
-                    result[1+rowidx*2][colidx*2] = ' '
+                # the south and west don't have to be drawn because the neighbor cell already takes care of it
+                # if 's' in cell.doors:
+                #     result[2+rowidx*2][1+colidx*2] = ' '
+                # if 'w' in cell.doors:
+                #     result[1+rowidx*2][colidx*2] = ' '
         return "\n".join("".join(line) for line in result)
 
-    def graphics(self):
-        gui = GuiWindow(self.columns, self.rows)
-        gui.canvas.delete(tkinter.ALL)
-        for rowidx, row in enumerate(self.cells):
-            for colidx, cell in enumerate(row):
-                x, y = colidx*gui.SCALE+1, rowidx*gui.SCALE+1
+    def draw_graphics(self, gui):
+        gui.clear()
+        for y, row in enumerate(self.cells):
+            for x, cell in enumerate(row):
                 if 'n' not in cell.doors:
-                    gui.canvas.create_line(x, y, x+gui.SCALE, y)
+                    gui.line(x, y, x+1, y)
                 if 'e' not in cell.doors:
-                    gui.canvas.create_line(x+gui.SCALE, y, x+gui.SCALE, y+gui.SCALE)
-                if 's' not in cell.doors:
-                    gui.canvas.create_line(x, y+gui.SCALE, x+gui.SCALE, y+gui.SCALE)
-                if 'w' not in cell.doors:
-                    gui.canvas.create_line(x, y, x, y+gui.SCALE)
-
-        gui.mainloop()
+                    gui.line(x+1, y, x+1, y+1)
+                # the south and west don't have to be drawn because the neighbor cell already takes care of it
+                # if 's' not in cell.doors:
+                #     gui.line(x, y+1, x+1, y+1)
+                # if 'w' not in cell.doors:
+                #     gui.line(x, y, x, y+1)
+        # make sure west and south borders are drawn
+        gui.line(0, 0, 0, self.rows)
+        gui.line(0, self.rows, self.columns, self.rows)
 
 
 class GuiWindow(tkinter.Tk):
-    SCALE = 6
+    SCALE = 12
 
     def __init__(self, columns, rows):
         super().__init__()
         self.title("maze")
         self.geometry("{}x{}".format(columns*self.SCALE+self.SCALE, rows*self.SCALE+self.SCALE))
         self.canvas = tkinter.Canvas(self, bg='light gray')
-        self.canvas.pack(fill=tkinter.BOTH, expand=True)
+        self.canvas.pack(fill=tkinter.BOTH, expand=True, padx=4, pady=4)
+
+    def line(self, x1, y1, x2, y2):
+        self.canvas.create_line(1+x1*self.SCALE, 1+y1*self.SCALE, 1+x2*self.SCALE, 1+y2*self.SCALE)
+
+    def clear(self):
+        self.canvas.delete(tkinter.ALL)
 
 
 class HuntAndKillMazeGenerator:
@@ -67,16 +73,18 @@ class HuntAndKillMazeGenerator:
         self.cells = [[Cell() for _ in range(columns)] for _ in range(rows)]
 
     def generate(self):
+        # first a few random start positions
+        for _ in range(int((self.columns*self.rows)**0.4)):
+            start_col = random.randrange(0, self.columns)
+            start_row = random.randrange(0, self.rows)
+            self.carve(start_col, start_row)
+            yield Maze(self.cells)
         start_col = 0
         start_row = 0
         while start_col >= 0:
             self.carve(start_col, start_row)
             start_col, start_row = self.find_unvisited()
-            print(" ", start_row, end="          \r", flush=True)
-            #print("\033[2J\033[;H")  # clear screen
-            #print(Maze(self.cells).ascii())
-            #time.sleep(0.01)
-        return Maze(self.cells)
+            yield Maze(self.cells)
 
     def find_unvisited(self):
         for rowidx, row in enumerate(self.cells):
@@ -146,11 +154,22 @@ class HuntAndKillMazeGenerator:
 
 
 if __name__ == "__main__":
-    width = 200
-    height = 150
-    print("Generating maze of {}x{} cells...".format(width, height))
-    gen = HuntAndKillMazeGenerator(width, height)
-    maze = gen.generate()
-    print("\ndone!")
-    maze.graphics()
-    # print(maze.ascii())
+    width = 80
+    height = 60
+    maze_generator = HuntAndKillMazeGenerator(width, height)
+    mazes = maze_generator.generate()
+    gui = GuiWindow(width, height)
+
+    def generate_maze():
+        try:
+            _ = next(mazes)
+            maze = next(mazes)
+        except StopIteration:
+            pass
+        else:
+            maze.draw_graphics(gui)
+            # print("NEXT MAZE\n", maze.ascii())
+            gui.after(10, generate_maze)
+
+    gui.after_idle(generate_maze)
+    gui.mainloop()
