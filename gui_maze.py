@@ -11,13 +11,12 @@ if __name__ == "__main__":
 
     def generate_maze():
         try:
-            _ = next(mazes)
             maze = next(mazes)
         except StopIteration:
             pass
         else:
+            gui.clear()     # don't redraw everything every frame but just keep removing walls progressively?
             maze.draw_graphics(gui)
-            # print("NEXT MAZE\n", maze.ascii())
             gui.after(10, generate_maze)
 
     gui.after_idle(generate_maze)
