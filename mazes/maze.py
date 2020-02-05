@@ -1,6 +1,14 @@
 from typing import List
 
 
+DxDy = {
+    "n": (0, -1),
+    "e": (1, 0),
+    "s": (0, 1),
+    "w": (-1, 0)
+}
+
+
 class Cell:
     def __init__(self) -> None:
         self.open = False

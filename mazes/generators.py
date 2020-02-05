@@ -1,6 +1,6 @@
 import random
 from typing import Generator, Tuple, List
-from .maze import Cell, Maze
+from .maze import Cell, Maze, DxDy
 
 
 class HuntAndKill:
@@ -10,13 +10,16 @@ class HuntAndKill:
         self.cells = [[Cell() for _ in range(columns)] for _ in range(rows)]
         self._previous_start_row = 0
 
-    def generate(self) -> Generator[Maze, None, None]:
-        # first a few random start routes, to make the maze more 'well-formed'
-        for _ in range(int((self.columns*self.rows)**0.4)):
-            start_col = random.randrange(0, self.columns)
-            start_row = random.randrange(0, self.rows)
-            self.carve(start_col, start_row)
-            yield Maze(self.cells)
+    def generate(self) -> Maze:
+        maze = Maze([[]])
+        for maze in self.generate_iterative():
+            pass
+        return maze
+
+    def generate_iterative(self) -> Generator[Maze, None, None]:
+        # because the maze is constructed from top to bottom,
+        # the solution tends to be in the top and right part of the maze.
+        # TODO: find a way to make the maze more 'well-formed'
         start_col = 0
         start_row = 0
         while start_col >= 0:
@@ -69,14 +72,8 @@ class HuntAndKill:
             while True:
                 direction, next_cell = random.choice(neighbors)
                 next_col, next_row = column, row
-                if direction == "n":
-                    next_row -= 1
-                elif direction == "e":
-                    next_col += 1
-                elif direction == "s":
-                    next_row += 1
-                elif direction == "w":
-                    next_col -= 1
+                next_col += DxDy[direction][0]
+                next_row += DxDy[direction][1]
                 if not next_cell.open:
                     break
             cell.doors += direction

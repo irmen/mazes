@@ -1,10 +1,11 @@
 import tkinter
-from mazes.maze import Maze
+from mazes.maze import Maze, DxDy
 from mazes.generators import HuntAndKill
+from mazes.runners import DepthFirst
 
 
 class GuiWindow(tkinter.Tk):
-    SCALE = 12
+    SCALE = 14
 
     def __init__(self, columns: int, rows: int) -> None:
         super().__init__()
@@ -33,22 +34,58 @@ class GuiWindow(tkinter.Tk):
     def clear(self) -> None:
         self.canvas.delete(tkinter.ALL)
 
+    def erase_path(self, path: str) -> None:
+        self.canvas.delete("path")
+
+    def draw_path(self, path: str, color: str = "teal") -> None:
+        x, y = 0, 0
+        self.canvas.create_rectangle(4+x*self.SCALE, 4+y*self.SCALE,
+                                     (self.SCALE-3)+x*self.SCALE, (self.SCALE-3)+y*self.SCALE,
+                                     fill=color, tags="path")
+        for step in path:
+            x += DxDy[step][0]
+            y += DxDy[step][1]
+            self.canvas.create_rectangle(4+x*self.SCALE, 4+y*self.SCALE,
+                                         (self.SCALE-3)+x*self.SCALE, (self.SCALE-3)+y*self.SCALE,
+                                         fill=color, tags="path")
+
 
 if __name__ == "__main__":
-    width = 80
-    height = 60
+    width = 50
+    height = 40
     maze_generator = HuntAndKill(width, height)
-    mazes = maze_generator.generate()
+    mazes = maze_generator.generate_iterative()
+    final_maze = Maze([[]])
     gui = GuiWindow(width, height)
 
     def generate_maze():
+        global final_maze
         try:
             maze = next(mazes)
         except StopIteration:
-            pass
+            solve_maze()
         else:
+            final_maze = maze
             gui.draw_maze(maze)
             gui.after(10, generate_maze)
+
+    def solve_maze():
+        solutions = DepthFirst().solve_iterative(final_maze)
+        previous_solution = ""
+
+        def animate_solve():
+            nonlocal previous_solution
+            try:
+                solution = next(solutions)
+            except StopIteration:
+                pass
+            else:
+                gui.erase_path(previous_solution)
+                gui.draw_path(solution)
+                previous_solution = solution
+                gui.after(2, animate_solve)
+
+        animate_solve()
 
     gui.after_idle(generate_maze)
     gui.mainloop()
