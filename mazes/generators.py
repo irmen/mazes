@@ -35,12 +35,12 @@ class HuntAndKill:
         for row in range(self._previous_start_row, self.rows):
             rowcells = self.cells[row]
             for column, cell in enumerate(rowcells):
-                if not cell.carved:
-                    # check if we have a carved neighbor, if so carve a path to that and continue with this cell
+                if not cell.open:
+                    # check if we have an open neighbor, if so carve a path to that and continue with this cell
                     neighbors = self.neighbors(column, row)
-                    carved_neighbors = [(direction, cell) for direction, cell in neighbors if cell.carved]
-                    if carved_neighbors:
-                        direction, neighbor = random.choice(carved_neighbors)
+                    open_neighbors = [(direction, cell) for direction, cell in neighbors if cell.open]
+                    if open_neighbors:
+                        direction, neighbor = random.choice(open_neighbors)
                         cell.doors += direction
                         neighbor.doors += self.opposite_direction[direction]
                         self._previous_start_row = row
@@ -62,9 +62,9 @@ class HuntAndKill:
     def carve(self, column: int, row: int) -> None:
         while True:
             cell = self.cells[row][column]
-            cell.carved = True
+            cell.open = True
             neighbors = self.neighbors(column, row)
-            if all(cell.carved for _, cell in neighbors):
+            if all(cell.open for _, cell in neighbors):
                 return
             while True:
                 direction, next_cell = random.choice(neighbors)
@@ -77,7 +77,7 @@ class HuntAndKill:
                     next_row += 1
                 elif direction == "w":
                     next_col -= 1
-                if not next_cell.carved:
+                if not next_cell.open:
                     break
             cell.doors += direction
             next_cell.doors += self.opposite_direction[direction]
