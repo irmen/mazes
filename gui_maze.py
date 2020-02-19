@@ -1,6 +1,6 @@
 import tkinter
-from mazes.maze import Maze, DxDy
-from mazes.generators import HuntAndKill
+from mazes.maze import Maze, dxdy
+from mazes.generators import *
 from mazes.runners import DepthFirst
 
 
@@ -43,8 +43,8 @@ class GuiWindow(tkinter.Tk):
                                      (self.SCALE-3)+x*self.SCALE, (self.SCALE-3)+y*self.SCALE,
                                      fill=color, tags="path")
         for step in path:
-            x += DxDy[step][0]
-            y += DxDy[step][1]
+            x += dxdy[step][0]
+            y += dxdy[step][1]
             self.canvas.create_rectangle(4+x*self.SCALE, 4+y*self.SCALE,
                                          (self.SCALE-3)+x*self.SCALE, (self.SCALE-3)+y*self.SCALE,
                                          fill=color, tags="path")

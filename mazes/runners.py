@@ -1,5 +1,5 @@
 from typing import Generator, Set, Tuple
-from mazes.maze import Maze, DxDy
+from mazes.maze import Maze, dxdy
 
 
 class SolutionFound(Exception):
@@ -20,7 +20,7 @@ class DepthFirst:
             doors = maze.cells[y][x].doors
             for direction in "nesw":
                 if direction in doors:
-                    dp = DxDy[direction]
+                    dp = dxdy[direction]
                     new_posx = x + dp[0]
                     new_posy = y + dp[1]
                     if (new_posx, new_posy) not in discovered:
@@ -50,7 +50,9 @@ class DepthFirst:
                 doors = maze.cells[y][x].doors
                 for direction in "nesw":
                     if direction in doors:
-                        dp = DxDy[direction]
+                        dp = dxdy[direction]
                         new_posx = x + dp[0]
                         new_posy = y + dp[1]
                         stack.append((path+direction, new_posx, new_posy))
+        if len(stack) == 0:
+            yield ""        # no solution found

@@ -1,7 +1,7 @@
 import time
 from mazes.maze import Maze
-from mazes.generators import HuntAndKill
-from mazes.runners import DepthFirst, DxDy
+from mazes.generators import *
+from mazes.runners import DepthFirst, dxdy
 
 
 def ascii_maze(maze: Maze, solution: str = "", wall: str = '#', space: str = ' ', walk: str = '*') -> str:
@@ -19,11 +19,11 @@ def ascii_maze(maze: Maze, solution: str = "", wall: str = '#', space: str = ' '
         x, y = (1, 1)
         result[y][x] = walk
         for direction in solution:
-            x += DxDy[direction][0]
-            y += DxDy[direction][1]
+            x += dxdy[direction][0]
+            y += dxdy[direction][1]
             result[y][x] = walk
-            x += DxDy[direction][0]
-            y += DxDy[direction][1]
+            x += dxdy[direction][0]
+            y += dxdy[direction][1]
             result[y][x] = walk
     return "\n".join("".join(line) for line in result)
 
@@ -33,11 +33,6 @@ if __name__ == "__main__":
     # maze_generator = HuntAndKill(30, 12)
     # maze = maze_generator.generate()
     # print(ascii_maze(maze, "", wall='▒', space='·'))
-
-    # solve maze in one go using Depth First Search:
-    # solver = DepthFirst()
-    # solution = solver.solve(maze)
-    # print(ascii_maze(maze, solution, wall='▒', space='·'))
 
     maze_generator = HuntAndKill(30, 12)
     maze = Maze([[]])
@@ -56,4 +51,9 @@ if __name__ == "__main__":
         print()
         time.sleep(0.02)
 
-    print("final solution:", steps)
+    print("final solution:\n  ", steps or "<no solution found>")
+
+    # solve maze in one go using Depth First Search:
+    solver = DepthFirst()
+    solution = solver.solve(maze)
+    print("Solution found in one go:\n  ", solution or "<no solution found>")

@@ -1,17 +1,25 @@
-from typing import List
+from typing import List, Any
 
 
-DxDy = {
+dxdy = {
     "n": (0, -1),
     "e": (1, 0),
     "s": (0, 1),
     "w": (-1, 0)
 }
 
+opposite_direction = {
+    "n": "s",
+    "e": "w",
+    "s": "n",
+    "w": "e",
+}
+
 
 class Cell:
     def __init__(self) -> None:
         self.open = False
+        self.tag: Any = None
         self.doors = ""         # n, e, s, w  possible
 
 
