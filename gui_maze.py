@@ -1,7 +1,7 @@
 import tkinter
 from mazes.maze import Maze, dxdy
 from mazes.generators import *
-from mazes.runners import DepthFirst
+from mazes.solvers import DepthFirstSolver
 
 
 class GuiWindow(tkinter.Tk):
@@ -53,24 +53,25 @@ class GuiWindow(tkinter.Tk):
 if __name__ == "__main__":
     width = 50
     height = 40
-    maze_generator = HuntAndKill(width, height)
+    # maze_generator = HuntAndKillGenerator(width, height)
+    maze_generator = DepthFirstGenerator(width, height)
     mazes = maze_generator.generate_iterative()
-    final_maze = Maze([[]])
+    maze = Maze([[]])
     gui = GuiWindow(width, height)
 
     def generate_maze():
-        global final_maze
+        global maze
         try:
-            maze = next(mazes)
+            for _ in range(maze_generator.suggested_iteration_size):
+                maze = next(mazes)
         except StopIteration:
             solve_maze()
         else:
-            final_maze = maze
             gui.draw_maze(maze)
             gui.after(10, generate_maze)
 
     def solve_maze():
-        solutions = DepthFirst().solve_iterative(final_maze)
+        solutions = DepthFirstSolver().solve_iterative(maze)
         previous_solution = ""
 
         def animate_solve():

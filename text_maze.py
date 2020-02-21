@@ -1,7 +1,7 @@
 import time
 from mazes.maze import Maze
 from mazes.generators import *
-from mazes.runners import DepthFirst, dxdy
+from mazes.solvers import DepthFirstSolver, dxdy
 
 
 def ascii_maze(maze: Maze, solution: str = "", wall: str = '#', space: str = ' ', walk: str = '*') -> str:
@@ -30,20 +30,34 @@ def ascii_maze(maze: Maze, solution: str = "", wall: str = '#', space: str = ' '
 
 if __name__ == "__main__":
     # print just the maze in one go:
-    # maze_generator = HuntAndKill(30, 12)
+    # maze_generator = DepthFirstGenerator(30, 12)
     # maze = maze_generator.generate()
     # print(ascii_maze(maze, "", wall='▒', space='·'))
 
-    maze_generator = HuntAndKill(30, 12)
+    # maze_generator = HuntAndKillGenerator(30, 12)
+    maze_generator = DepthFirstGenerator(30, 12)
     maze = Maze([[]])
-    for maze in maze_generator.generate_iterative():
-        print("\033[2J\033[H")      # clear screen
-        print(ascii_maze(maze, "", wall='▒', space='·'))
-        print()
-        time.sleep(0.05)
+    if maze_generator.suggested_iteration_size == 1:
+        for maze in maze_generator.generate_iterative():
+            print("\033[2J\033[H")      # clear screen
+            print(ascii_maze(maze, "", wall='▒', space='·'))
+            print()
+            time.sleep(0.05)
+    else:
+        mazes = iter(maze_generator.generate_iterative())
+        while True:
+            try:
+                for _ in range(maze_generator.suggested_iteration_size):
+                    maze = next(mazes)
+                print("\033[2J\033[H")      # clear screen
+                print(ascii_maze(maze, "", wall='▒', space='·'))
+                print()
+                time.sleep(0.05)
+            except StopIteration:
+                break
 
     # solve maze using DFS and animate the searched paths
-    solver = DepthFirst()
+    solver = DepthFirstSolver()
     steps = ""
     for steps in solver.solve_iterative(maze):
         print("\033[2J\033[H")      # clear screen
@@ -54,6 +68,6 @@ if __name__ == "__main__":
     print("final solution:\n  ", steps or "<no solution found>")
 
     # solve maze in one go using Depth First Search:
-    solver = DepthFirst()
+    solver = DepthFirstSolver()
     solution = solver.solve(maze)
     print("Solution found in one go:\n  ", solution or "<no solution found>")

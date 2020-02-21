@@ -6,7 +6,7 @@ class SolutionFound(Exception):
     pass
 
 
-class DepthFirst:
+class DepthFirstSolver:
     def solve(self, maze: Maze) -> str:
         # assume start cell is at (0, 0) in the top left,
         # and the exit cell is in the lower right at (numcols-1, numrows-1).
