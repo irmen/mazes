@@ -1,7 +1,7 @@
 import tkinter
 from mazes.maze import Maze, dxdy
 from mazes.generators import *
-from mazes.solvers import DepthFirstSolver
+from mazes.solvers import DepthFirstSolver, BreadthFirstSolver
 
 
 class GuiWindow(tkinter.Tk):
@@ -71,8 +71,9 @@ if __name__ == "__main__":
             gui.after(10, generate_maze)
 
     def solve_maze():
-        solutions = DepthFirstSolver().solve_generator(maze)
-        previous_solution = ""
+        # solutions = DepthFirstSolver().solve_generator(maze)
+        solutions = BreadthFirstSolver().solve_generator(maze)
+        previous_solution = (Maze([[]]), "")
 
         def animate_solve():
             nonlocal previous_solution
