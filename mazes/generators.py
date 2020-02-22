@@ -11,7 +11,7 @@ class DepthFirstGenerator:
     Mazes usually consist of long paths with fairly low branching.
     Requires a stack to keep track of where it's been.
     """
-    suggested_iteration_size = 10
+    suggested_iteration_size = 20
 
     def __init__(self, columns: int, rows: int) -> None:
         self.columns = columns

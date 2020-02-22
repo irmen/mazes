@@ -9,16 +9,14 @@ class BreadthFirstSolver:
         # The last path returned is the solution.
         paths = {(0, 0, "")}
         discovered: Set[Tuple[int, int]] = set()
-        iteration = 0
         while paths:
             x, y, path = paths.pop()
+            maze.cells[y][x].tag = len(path)
             if x == maze.num_columns-1 and y == maze.num_rows-1:
                 yield path
                 return
             discovered.add((x, y))
             yield path
-            maze.cells[y][x].tag = iteration
-            iteration += 1
             doors = maze.cells[y][x].doors
             for direction in [d for d in "nesw" if d in doors]:
                 dx, dy = dxdy[direction]
