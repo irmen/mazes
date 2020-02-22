@@ -2,10 +2,6 @@ from typing import Generator, Set, Tuple
 from mazes.maze import Maze, dxdy
 
 
-class SolutionFound(Exception):
-    pass
-
-
 class DepthFirstSolver:
     def solve(self, maze: Maze) -> str:
         # assume start cell is at (0, 0) in the top left,
@@ -13,10 +9,10 @@ class DepthFirstSolver:
         # this routine recursively looks until a solution is found and returns that.
         discovered = set()
 
-        def dfs(x: int, y: int, path: str) -> None:
-            discovered.add((x, y))
+        def dfs(x: int, y: int, path: str) -> str:
             if x == maze.num_columns-1 and y == maze.num_rows-1:
-                raise SolutionFound(path)
+                return path
+            discovered.add((x, y))
             doors = maze.cells[y][x].doors
             for direction in "nesw":
                 if direction in doors:
@@ -24,14 +20,12 @@ class DepthFirstSolver:
                     new_posx = x + dp[0]
                     new_posy = y + dp[1]
                     if (new_posx, new_posy) not in discovered:
-                        dfs(new_posx, new_posy, path+direction)
-
-        try:
-            dfs(0, 0, "")
-        except SolutionFound as sol:
-            return sol.args[0]
-        else:
+                        solution = dfs(new_posx, new_posy, path+direction)
+                        if solution:
+                            return solution
             return ""
+
+        return dfs(0, 0, "")
 
     def solve_iterative(self, maze) -> Generator[str, None, None]:
         # assume start cell is at (0, 0) in the top left,
@@ -43,10 +37,10 @@ class DepthFirstSolver:
         while stack:
             path, x, y = stack.pop()
             if (x, y) not in discovered:
-                discovered.add((x, y))
                 yield path
                 if x == maze.num_columns-1 and y == maze.num_rows-1:
                     return
+                discovered.add((x, y))
                 doors = maze.cells[y][x].doors
                 for direction in "nesw":
                     if direction in doors:
