@@ -71,7 +71,7 @@ if __name__ == "__main__":
             gui.after(10, generate_maze)
 
     def solve_maze():
-        solutions = DepthFirstSolver().solve_iterative(maze)
+        solutions = DepthFirstSolver().solve_generator(maze)
         previous_solution = ""
 
         def animate_solve():

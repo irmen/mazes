@@ -58,16 +58,16 @@ if __name__ == "__main__":
 
     # solve maze using DFS and animate the searched paths
     solver = DepthFirstSolver()
-    steps = ""
-    for steps in solver.solve_iterative(maze):
+    path = ""
+    for path in solver.solve_generator(maze):
         print("\033[2J\033[H")      # clear screen
-        print(ascii_maze(maze, steps, wall='▒', space='·'))
+        print(ascii_maze(maze, path, wall='▒', space='·'))
         print()
         time.sleep(0.02)
 
-    print("final solution:\n  ", steps or "<no solution found>")
+    print("final solution:\n  ", path or "<no solution found>")
 
     # solve maze in one go using Depth First Search:
     solver = DepthFirstSolver()
-    solution = solver.solve(maze)
-    print("Solution found in one go:\n  ", solution or "<no solution found>")
+    path = solver.solve(maze)
+    print("Solution found in one go:\n  ", path or "<no solution found>")
