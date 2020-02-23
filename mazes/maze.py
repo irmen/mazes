@@ -1,6 +1,5 @@
 from typing import List, Any
 
-
 dxdy = {
     "n": (0, -1),
     "e": (1, 0),
@@ -20,7 +19,7 @@ class Cell:
     def __init__(self) -> None:
         self.open = False
         self.tag: Any = None
-        self.doors = ""         # n, e, s, w  possible
+        self.doors = ""  # n, e, s, w  possible
 
 
 class Maze:

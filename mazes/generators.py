@@ -1,9 +1,11 @@
 import random
 from abc import ABC, abstractmethod
 from typing import Generator, Tuple, List
+
 from .maze import Cell, Maze, dxdy, opposite_direction
 
 __all__ = ["DepthFirstGenerator", "HuntAndKillGenerator"]
+
 
 # TODO make more generators, see https://www.jamisbuck.org/mazes/
 
@@ -59,13 +61,13 @@ class DepthFirstGenerator(MazeGenerator):
     def neighbors(self, column: int, row: int) -> List[Tuple[str, Cell]]:
         n = []
         if row > 0:
-            n.append(("n", self.cells[row-1][column]))
-        if column < self.columns-1:
-            n.append(("e", self.cells[row][column+1]))
-        if row < self.rows-1:
-            n.append(("s", self.cells[row+1][column]))
+            n.append(("n", self.cells[row - 1][column]))
+        if column < self.columns - 1:
+            n.append(("e", self.cells[row][column + 1]))
+        if row < self.rows - 1:
+            n.append(("s", self.cells[row + 1][column]))
         if column > 0:
-            n.append(("w", self.cells[row][column-1]))
+            n.append(("w", self.cells[row][column - 1]))
         return n
 
 
@@ -99,7 +101,7 @@ class HuntAndKillGenerator(MazeGenerator):
         # because the maze is constructed from top to bottom,
         # the solution tends to be in the top and right part of the maze.
         col = self.columns - 1
-        row = 0    # must start at first row
+        row = 0  # must start at first row
         while col >= 0:
             yield Maze(self.cells)
             self.carve(col, row)
@@ -125,13 +127,13 @@ class HuntAndKillGenerator(MazeGenerator):
     def neighbors(self, column: int, row: int) -> List[Tuple[str, Cell]]:
         n = []
         if row > 0:
-            n.append(("n", self.cells[row-1][column]))
-        if column < self.columns-1:
-            n.append(("e", self.cells[row][column+1]))
-        if row < self.rows-1:
-            n.append(("s", self.cells[row+1][column]))
+            n.append(("n", self.cells[row - 1][column]))
+        if column < self.columns - 1:
+            n.append(("e", self.cells[row][column + 1]))
+        if row < self.rows - 1:
+            n.append(("s", self.cells[row + 1][column]))
         if column > 0:
-            n.append(("w", self.cells[row][column-1]))
+            n.append(("w", self.cells[row][column - 1]))
         return n
 
     def carve(self, column: int, row: int) -> None:

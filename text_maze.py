@@ -1,6 +1,7 @@
 import time
-from mazes.maze import Maze
+
 from mazes.generators import *
+from mazes.maze import Maze
 from mazes.solvers import DepthFirstSolver, BreadthFirstSolver, dxdy
 
 
@@ -9,11 +10,11 @@ def ascii_maze_with_path(maze: Maze, path: str = "", wall: str = '#', space: str
     for rowidx, row in enumerate(maze.cells):
         for colidx, cell in enumerate(row):
             if cell.open:
-                result[1+rowidx*2][1+colidx*2] = space
+                result[1 + rowidx * 2][1 + colidx * 2] = space
             if 'n' in cell.doors:
-                result[rowidx*2][1+colidx*2] = space
+                result[rowidx * 2][1 + colidx * 2] = space
             if 'e' in cell.doors:
-                result[1+rowidx*2][2+colidx*2] = space
+                result[1 + rowidx * 2][2 + colidx * 2] = space
             # the south and west don't have to be drawn because the neighbor cells already takes care of these
     if path:
         x, y = (1, 1)
@@ -34,11 +35,11 @@ def ascii_maze_with_tags(maze: Maze, wall: str = '#', space: str = ' ', tagged: 
         for colidx, cell in enumerate(row):
             char = tagged if cell.tag else space
             if cell.open:
-                result[1+rowidx*2][1+colidx*2] = char
+                result[1 + rowidx * 2][1 + colidx * 2] = char
             if 'n' in cell.doors:
-                result[rowidx*2][1+colidx*2] = char
+                result[rowidx * 2][1 + colidx * 2] = char
             if 'e' in cell.doors:
-                result[1+rowidx*2][2+colidx*2] = char
+                result[1 + rowidx * 2][2 + colidx * 2] = char
             # the south and west don't have to be drawn because the neighbor cells already takes care of these
     return "\n".join("".join(line) for line in result)
 
@@ -54,7 +55,7 @@ if __name__ == "__main__":
     maze = Maze([[]])
     if maze_generator.suggested_iteration_size == 1:
         for maze in maze_generator.generate_iterative():
-            print("\033[2J\033[H")      # clear screen
+            print("\033[2J\033[H")  # clear screen
             print(ascii_maze_with_path(maze, "", wall='▒', space='·'))
             print()
             time.sleep(0.05)
@@ -64,7 +65,7 @@ if __name__ == "__main__":
             try:
                 for _ in range(maze_generator.suggested_iteration_size):
                     maze = next(mazes)
-                print("\033[2J\033[H")      # clear screen
+                print("\033[2J\033[H")  # clear screen
                 print(ascii_maze_with_path(maze, "", wall='▒', space='·'))
                 print()
                 time.sleep(0.05)
@@ -75,7 +76,7 @@ if __name__ == "__main__":
     bfs_solver = BreadthFirstSolver()
     path = ""
     for path in bfs_solver.solve_generator(maze):
-        print("\033[2J\033[H")      # clear screen
+        print("\033[2J\033[H")  # clear screen
         print(ascii_maze_with_tags(maze, wall='▒', space='·'))
         print()
         time.sleep(0.02)

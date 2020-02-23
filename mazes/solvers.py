@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Generator, Set, Tuple, Mapping
-from mazes.maze import Maze, dxdy
+from typing import Generator, Tuple, Mapping
 
-# TODO: store the path information in the cells in the maze (pointing back to the previous cell) rather than adding it onto huge strings
+from mazes.maze import Maze, dxdy
 
 
 class MazeSolver(ABC):
@@ -37,20 +36,20 @@ class BreadthFirstSolver(MazeSolver):
         # assume start cell is at (0, 0) in the top left,
         # and the exit cell is in the lower right at (numcols-1, numrows-1).
         # search strategy is breadth-first.
-        paths = [(0, 0, "")]
-        discovered = {(0, 0)}
+        paths = [(0, 0)]
+        discovered = {(0, 0): (0, 0)}  # remembers its path-previous node as well
         iterations = 0
         while paths:
-            x, y, path = paths.pop(0)
-            if x == maze.num_columns-1 and y == maze.num_rows-1:
-                return path, iterations
+            x, y = paths.pop(0)
+            if x == maze.num_columns - 1 and y == maze.num_rows - 1:
+                return self._walkback(discovered, x, y), iterations
             doors = maze.cells[y][x].doors
             for direction in [d for d in "nesw" if d in doors]:
                 dx, dy = dxdy[direction]
                 new_x, new_y = x + dx, y + dy
                 if (new_x, new_y) not in discovered:
-                    paths.append((new_x, new_y, path + direction))
-                    discovered.add((new_x, new_y))
+                    paths.append((new_x, new_y))
+                    discovered[(new_x, new_y)] = (x, y)
             iterations += 1
         return "", iterations
 
@@ -63,7 +62,7 @@ class BreadthFirstSolver(MazeSolver):
         while paths:
             x, y, path = paths.pop(0)
             maze.cells[y][x].tag = len(path)
-            if x == maze.num_columns-1 and y == maze.num_rows-1:
+            if x == maze.num_columns - 1 and y == maze.num_rows - 1:
                 yield path
                 return
             yield path
@@ -81,12 +80,12 @@ class DepthFirstSolver(MazeSolver):
         # assume start cell is at (0, 0) in the top left,
         # and the exit cell is in the lower right at (numcols-1, numrows-1).
         # search strategy is depth-first.
-        discovered = {(0, 0): (0, 0)}       # remembers its path-previous node as well
+        discovered = {(0, 0): (0, 0)}  # remembers its path-previous node as well
         stack = [(0, 0)]
         iterations = 0
         while stack:
             x, y = stack.pop()
-            if x == maze.num_columns-1 and y == maze.num_rows-1:
+            if x == maze.num_columns - 1 and y == maze.num_rows - 1:
                 return self._walkback(discovered, x, y), iterations
             doors = maze.cells[y][x].doors
             for direction in [d for d in "nesw" if d in doors]:
@@ -109,7 +108,7 @@ class DepthFirstSolver(MazeSolver):
         stack = [(0, 0, "")]
         while stack:
             x, y, path = stack.pop()
-            if x == maze.num_columns-1 and y == maze.num_rows-1:
+            if x == maze.num_columns - 1 and y == maze.num_rows - 1:
                 yield path
                 return
             yield path
@@ -118,5 +117,5 @@ class DepthFirstSolver(MazeSolver):
                 dx, dy = dxdy[direction]
                 new_x, new_y = x + dx, y + dy
                 if (new_x, new_y) not in discovered:
-                    stack.append((new_x, new_y, path+direction))
+                    stack.append((new_x, new_y, path + direction))
                     discovered.add((new_x, new_y))
