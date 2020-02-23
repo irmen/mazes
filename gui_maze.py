@@ -1,4 +1,5 @@
 import tkinter
+import colorsys
 from typing import Set, Tuple
 from mazes.maze import Maze, dxdy
 from mazes.generators import *
@@ -8,10 +9,18 @@ from mazes.solvers import DepthFirstSolver, BreadthFirstSolver
 class GuiWindow(tkinter.Tk):
     def __init__(self, columns: int, rows: int, scale: int = 14) -> None:
         super().__init__()
+        self.columns = columns
+        self.rows = rows
         self.scale = scale
         self.title("maze")
-        self.geometry("{}x{}+400+200".format(columns*self.scale+self.scale, rows*self.scale+self.scale))
-        self.canvas = tkinter.Canvas(self, bg='light gray')
+        self.geometry("+400+200")
+        self.canvas = tkinter.Canvas(self, bg='light gray', width=columns*self.scale+1, height=rows*self.scale+1)
+        bf = tkinter.Frame(self)
+        b1 = tkinter.Button(bf, text="Depth First Search", command=self.search_dfs)
+        b2 = tkinter.Button(bf, text="Breadth First Search", command=self.search_bfs)
+        b1.pack(side=tkinter.LEFT)
+        b2.pack(side=tkinter.LEFT)
+        bf.pack()
         self.canvas.pack(fill=tkinter.BOTH, expand=True, padx=4, pady=4)
         self.drawn_tagged_cells: Set[Tuple[int, int]] = set()
 
@@ -51,8 +60,14 @@ class GuiWindow(tkinter.Tk):
                                          self.scale-2+x*self.scale, self.scale-2+y*self.scale,
                                          fill=color, tags="path")
 
-    def draw_tagged_cells(self) -> None:
-        colors = [f"#{c:02x}0000" for c in range(256)]
+    def draw_tagged_cells(self, maze: Maze) -> None:
+        colors = []
+        for hue in range(256):
+            rf, gf, bf = colorsys.hsv_to_rgb(hue/256, 1, 0.99999)
+            r = int(rf*256)
+            g = int(gf*256)
+            b = int(bf*256)
+            colors.append(f"#{r:02x}{g:02x}{b:02x}")
 
         def color(tag: int) -> str:
             return colors[tag % len(colors)]
@@ -65,58 +80,77 @@ class GuiWindow(tkinter.Tk):
                                                  self.scale+x*self.scale, self.scale+y*self.scale,
                                                  fill=color(cell.tag), outline="", tags="path")
 
+    def search_bfs(self):
+        self.clear()
+
+        def solve_maze(maze: Maze) -> None:
+            solutions = BreadthFirstSolver().solve_generator(maze)
+            previous_path = ""
+
+            def animate_solve_tags():
+                nonlocal previous_path
+                more = True
+                try:
+                    previous_path = next(solutions)
+                except StopIteration:
+                    more = False
+                self.draw_tagged_cells(maze)
+                if more:
+                    self.after(1, animate_solve_tags)
+                else:
+                    self.draw_path(previous_path, "black")   # previous_path contains the shortest path
+
+            animate_solve_tags()
+
+        self.generate_maze(solve_maze)
+
+    def search_dfs(self):
+        self.clear()
+
+        def solve_maze(maze: Maze) -> None:
+            solutions = DepthFirstSolver().solve_generator(maze)
+            previous_path = ""
+
+            def animate_solve_paths():
+                nonlocal previous_path
+                more = True
+                path = ""
+                try:
+                    for _ in range(10):
+                        path = next(solutions)
+                        if not path:
+                            break
+                except StopIteration:
+                    more = False
+                self.erase_path(previous_path)
+                self.draw_path(path)
+                previous_path = path
+                if more:
+                    gui.after(2, animate_solve_paths)
+
+            animate_solve_paths()
+
+        self.generate_maze(solve_maze)
+
+    def generate_maze(self, solver) -> None:
+        # maze_generator = HuntAndKillGenerator(self.columns, self.rows)
+        maze_generator = DepthFirstGenerator(self.columns, self.rows)
+        mazes = maze_generator.generate_iterative()
+
+        def generate():
+            maze = Maze([[]])
+            try:
+                for _ in range(maze_generator.suggested_iteration_size * 5):
+                    maze = next(mazes)
+            except StopIteration:
+                solver(maze)
+            else:
+                self.draw_maze(maze)
+                self.after(10, generate)
+
+        generate()
+
 
 if __name__ == "__main__":
-    width = 100
-    height = 60
-    # maze_generator = HuntAndKillGenerator(width, height)
-    maze_generator = DepthFirstGenerator(width, height)
-    mazes = maze_generator.generate_iterative()
-    maze = Maze([[]])
-    gui = GuiWindow(width, height, 10)
-
-    def generate_maze():
-        global maze
-        try:
-            for _ in range(maze_generator.suggested_iteration_size * 5):
-                maze = next(mazes)
-        except StopIteration:
-            solve_maze()
-        else:
-            gui.draw_maze(maze)
-            gui.after(10, generate_maze)
-
-    def solve_maze():
-        # solutions = DepthFirstSolver().solve_generator(maze)
-        solutions = BreadthFirstSolver().solve_generator(maze)
-        previous_path = ""
-
-        def animate_solve_tags():
-            nonlocal previous_path
-            try:
-                previous_path = next(solutions)
-            except StopIteration:
-                gui.draw_tagged_cells()
-                gui.draw_path(previous_path, "yellow")   # previous_path contains the shortest path
-            else:
-                gui.draw_tagged_cells()
-                gui.after(1, animate_solve_tags)
-
-        # def animate_solve_paths():
-        #     nonlocal previous_path
-        #     try:
-        #         path = next(solutions)
-        #     except StopIteration:
-        #         pass
-        #     else:
-        #         gui.erase_path(previous_path)
-        #         gui.draw_path(path)
-        #         previous_path = path
-        #         gui.after(1, animate_solve)
-        #
-        # animate_solve_paths()
-
-        animate_solve_tags()
-
-    gui.after_idle(generate_maze)
+    gui = GuiWindow(100, 60, 10)
     gui.mainloop()
