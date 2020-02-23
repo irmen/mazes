@@ -23,7 +23,6 @@ class BreadthFirstSolver:
                 new_x, new_y = x + dx, y + dy
                 if (new_x, new_y) not in discovered:
                     paths.add((new_x, new_y, path + direction))
-        yield ""  # no solution found
 
     def solve(self, maze) -> Tuple[str, int]:
         # assume start cell is at (0, 0) in the top left,
@@ -90,4 +89,3 @@ class DepthFirstSolver:
                 new_x, new_y = x + dx, y + dy
                 if (new_x, new_y) not in discovered:
                     stack.append((path+direction, new_x, new_y))
-        yield ""  # no solution found

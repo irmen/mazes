@@ -74,7 +74,6 @@ class HuntAndKillGenerator:
         self.columns = columns
         self.rows = rows
         self.cells = [[Cell() for _ in range(columns)] for _ in range(rows)]
-        self._previous_start_row = 0
 
     def generate(self) -> Maze:
         maze = Maze([[]])
@@ -85,26 +84,27 @@ class HuntAndKillGenerator:
     def generate_iterative(self) -> Generator[Maze, None, None]:
         # because the maze is constructed from top to bottom,
         # the solution tends to be in the top and right part of the maze.
-        col = 0
-        row = 0
+        col = self.columns - 1
+        row = self.rows - 1
         while col >= 0:
+            yield Maze(self.cells)
             self.carve(col, row)
             col, row = self.find_next_unvisited()
-            yield Maze(self.cells)
+        yield Maze(self.cells)
 
     def find_next_unvisited(self) -> Tuple[int, int]:
-        for row in range(self._previous_start_row, self.rows):
+        for row in range(0, self.rows):
             rowcells = self.cells[row]
             for column, cell in enumerate(rowcells):
                 if not cell.open:
-                    # carve a path to one of our open neighbors
-                    accessible_neighbors = [(direction, cell)
-                                            for direction, cell in self.neighbors(column, row) if cell.open]
-                    direction, neighbor = random.choice(accessible_neighbors)
-                    cell.doors += direction
-                    neighbor.doors += opposite_direction[direction]
-                    self._previous_start_row = row
-                    return column, row
+                    accessible_neighbors = [(direction, n)
+                                            for direction, n in self.neighbors(column, row) if n.open]
+                    if accessible_neighbors:
+                        # carve a path to one of our open neighbors
+                        direction, neighbor = random.choice(accessible_neighbors)
+                        cell.doors += direction
+                        neighbor.doors += opposite_direction[direction]
+                        return column, row
         return -1, -1
 
     def neighbors(self, column: int, row: int) -> List[Tuple[str, Cell]]:
@@ -122,17 +122,15 @@ class HuntAndKillGenerator:
     def carve(self, column: int, row: int) -> None:
         while True:
             cell = self.cells[row][column]
+            assert not cell.open
             cell.open = True
             neighbors = self.neighbors(column, row)
-            if all(cell.open for _, cell in neighbors):
+            unvisited_neighbors = [(direction, cell) for direction, cell in neighbors if not cell.open]
+            if not unvisited_neighbors:
                 return
-            while True:
-                direction, next_cell = random.choice(neighbors)
-                next_col = column + dxdy[direction][0]
-                next_row = row + dxdy[direction][1]
-                if not next_cell.open:
-                    break
+            direction, next_cell = random.choice(unvisited_neighbors)
             cell.doors += direction
             next_cell.doors += opposite_direction[direction]
-            column = next_col
-            row = next_row
+            dx, dy = dxdy[direction]
+            column += dx
+            row += dy

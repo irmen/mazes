@@ -74,7 +74,7 @@ class GuiWindow(tkinter.Tk):
 
         for y, row in enumerate(maze.cells):
             for x, cell in enumerate(row):
-                if cell.tag and (x, y) not in self.drawn_tagged_cells:
+                if cell.tag is not None and (x, y) not in self.drawn_tagged_cells:
                     self.drawn_tagged_cells.add((x, y))
                     self.canvas.create_rectangle(3+x*self.scale, 3+y*self.scale,
                                                  self.scale+x*self.scale, self.scale+y*self.scale,
@@ -118,13 +118,12 @@ class GuiWindow(tkinter.Tk):
                 try:
                     for _ in range(10):
                         path = next(solutions)
-                        if not path:
-                            break
                 except StopIteration:
                     more = False
-                self.erase_path(previous_path)
-                self.draw_path(path)
-                previous_path = path
+                if path:
+                    self.erase_path(previous_path)
+                    self.draw_path(path)
+                    previous_path = path
                 if more:
                     gui.after(2, animate_solve_paths)
 
@@ -133,16 +132,18 @@ class GuiWindow(tkinter.Tk):
         self.generate_maze(solve_maze)
 
     def generate_maze(self, solver) -> None:
-        # maze_generator = HuntAndKillGenerator(self.columns, self.rows)
-        maze_generator = DepthFirstGenerator(self.columns, self.rows)
+        maze_generator = HuntAndKillGenerator(self.columns, self.rows)
+        # maze_generator = DepthFirstGenerator(self.columns, self.rows)
         mazes = maze_generator.generate_iterative()
+        maze = Maze([[]])
 
         def generate():
-            maze = Maze([[]])
+            nonlocal maze
             try:
                 for _ in range(maze_generator.suggested_iteration_size * 5):
                     maze = next(mazes)
             except StopIteration:
+                self.draw_maze(maze)
                 solver(maze)
             else:
                 self.draw_maze(maze)
