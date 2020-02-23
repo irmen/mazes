@@ -132,8 +132,8 @@ class GuiWindow(tkinter.Tk):
         self.generate_maze(solve_maze)
 
     def generate_maze(self, solver) -> None:
-        maze_generator = HuntAndKillGenerator(self.columns, self.rows)
-        # maze_generator = DepthFirstGenerator(self.columns, self.rows)
+        # maze_generator = HuntAndKillGenerator(self.columns, self.rows)
+        maze_generator = DepthFirstGenerator(self.columns, self.rows)
         mazes = maze_generator.generate_iterative()
         maze = Maze([[]])
 

@@ -1,11 +1,24 @@
 import random
+from abc import ABC, abstractmethod
 from typing import Generator, Tuple, List
 from .maze import Cell, Maze, dxdy, opposite_direction
 
 __all__ = ["DepthFirstGenerator", "HuntAndKillGenerator"]
 
+# TODO make more generators, see https://www.jamisbuck.org/mazes/
 
-class DepthFirstGenerator:
+
+class MazeGenerator(ABC):
+    @abstractmethod
+    def generate(self) -> Maze:
+        pass
+
+    @abstractmethod
+    def generate_iterative(self) -> Generator[Maze, None, None]:
+        pass
+
+
+class DepthFirstGenerator(MazeGenerator):
     """
     Recursive Depth-first based approach of making the paths.
     Mazes usually consist of long paths with fairly low branching.
@@ -56,7 +69,7 @@ class DepthFirstGenerator:
         return n
 
 
-class HuntAndKillGenerator:
+class HuntAndKillGenerator(MazeGenerator):
     """
     Similar to a depth-first based approach of making the paths,
     this generator does not require a stack. It can create huge mazes
@@ -74,6 +87,7 @@ class HuntAndKillGenerator:
         self.columns = columns
         self.rows = rows
         self.cells = [[Cell() for _ in range(columns)] for _ in range(rows)]
+        self._previous_row_hunted = 0
 
     def generate(self) -> Maze:
         maze = Maze([[]])
@@ -85,7 +99,7 @@ class HuntAndKillGenerator:
         # because the maze is constructed from top to bottom,
         # the solution tends to be in the top and right part of the maze.
         col = self.columns - 1
-        row = self.rows - 1
+        row = 0    # must start at first row
         while col >= 0:
             yield Maze(self.cells)
             self.carve(col, row)
@@ -93,7 +107,7 @@ class HuntAndKillGenerator:
         yield Maze(self.cells)
 
     def find_next_unvisited(self) -> Tuple[int, int]:
-        for row in range(0, self.rows):
+        for row in range(self._previous_row_hunted, self.rows):
             rowcells = self.cells[row]
             for column, cell in enumerate(rowcells):
                 if not cell.open:
@@ -104,6 +118,7 @@ class HuntAndKillGenerator:
                         direction, neighbor = random.choice(accessible_neighbors)
                         cell.doors += direction
                         neighbor.doors += opposite_direction[direction]
+                        self._previous_row_hunted = row
                         return column, row
         return -1, -1
 
