@@ -1,7 +1,10 @@
 import time
+import random
 
 from mazes.generators import *
 from mazes.solvers import *
+
+random.seed(12345)
 
 for generator_class in [HuntAndKillGenerator, DepthFirstGenerator]:
     print("starting", generator_class.__name__)
