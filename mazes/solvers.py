@@ -44,7 +44,8 @@ class BreadthFirstSolver(MazeSolver):
             if x == maze.num_columns - 1 and y == maze.num_rows - 1:
                 return self._walkback(discovered, x, y), iterations
             doors = maze.cells[y][x].doors
-            for direction in [d for d in "nesw" if d in doors]:
+            # for direction in [d for d in "nesw" if d in doors]:
+            for direction in doors:
                 dx, dy = dxdy[direction]
                 new_x, new_y = x + dx, y + dy
                 if (new_x, new_y) not in discovered:
@@ -67,7 +68,8 @@ class BreadthFirstSolver(MazeSolver):
                 return
             yield path
             doors = maze.cells[y][x].doors
-            for direction in [d for d in "nesw" if d in doors]:
+            # for direction in [d for d in "nesw" if d in doors]:
+            for direction in doors:
                 dx, dy = dxdy[direction]
                 new_x, new_y = x + dx, y + dy
                 if (new_x, new_y) not in discovered:
